@@ -24,8 +24,7 @@ population["Population"] = pd.to_numeric(population["Population"].str.replace(",
 # Add North America and South America population
 americas_df = population.loc[(population['Name'] == 'North America') | (population['Name'] == 'South America')]
 americas_total = americas_df.sum(numeric_only=True)
-americas_total['Name'] = 'Americas'
-print(americas_total)
+americas_total['Name'] = 'America'
 population.drop(population[(population['Name'] == 'North America') | (population['Name'] == 'South America')].index, inplace=True)
 
 # Add Africa and Australia population to ROW
@@ -38,8 +37,19 @@ population.drop(population[(population['Name'] == 'Africa') | (population['Name'
 population.loc[len(population)+1] = row_total
 population.loc[len(population)+1] = americas_total
 
+# Create a pivot table with Name as index, and Population as values
+population_pivot = pd.pivot_table(population, index=None, columns='Name', values='Population', aggfunc='sum')
 
+# Remove the Name index from the pivot table
+population_pivot.index.name = None
 
+# Rename the columns to remove the Name label
+population_pivot.columns.name = None
+
+# Reset the index to make Population a column
+population = population_pivot.reset_index()
+
+# Output the DataFrame
 print(population)
 
 # Load data
@@ -62,8 +72,11 @@ c.execute('''CREATE TABLE games
 
 # Table for population
 c.execute('''CREATE TABLE population
-            (Name TEXT,
-             Population REAL);''')
+            (America REAL,
+             Asia REAL,
+             Europe REAL,
+             ROW REAL
+             );''')
 
 # Load data
 # Save to SQLite DB
